@@ -1,27 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Facebook và TikTok Video/Audio Downloader
-Hỗ trợ tải video và audio từ Facebook và TikTok
+Video Downloader Module
+Hỗ trợ tải video và audio từ Facebook, TikTok và các nền tảng khác
 """
 
 import os
-import sys
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
+import re
 import threading
 import yt_dlp
 from pathlib import Path
-import re
+import tkinter as tk
+from tkinter import ttk, messagebox, filedialog
 
-class VideoDownloader:
-    def __init__(self):
-        self.root = tk.Tk()
-        self.root.title("Facebook & TikTok Downloader")
-        self.root.geometry("600x500")
-        self.root.resizable(True, True)
+class VideoDownloaderModule:
+    def __init__(self, parent_frame):
+        self.parent_frame = parent_frame
         
-        # Biến lưu trữ
+        # Biến lưu trữ - phải khởi tạo trước setup_ui()
         self.download_path = tk.StringVar(value=str(Path.home() / "Downloads"))
         self.url_var = tk.StringVar()
         self.format_var = tk.StringVar(value="best")
@@ -30,54 +26,53 @@ class VideoDownloader:
         self.setup_ui()
         
     def setup_ui(self):
-        """Thiết lập giao diện người dùng"""
-        # Frame chính
-        main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        """Thiết lập giao diện module"""
+        # Main frame
+        self.main_frame = ttk.Frame(self.parent_frame, padding="10")
+        self.main_frame.pack(fill=tk.BOTH, expand=True)
         
-        # Cấu hình grid
-        self.root.columnconfigure(0, weight=1)
-        self.root.rowconfigure(0, weight=1)
-        main_frame.columnconfigure(1, weight=1)
-        
-        # Tiêu đề
-        title_label = ttk.Label(main_frame, text="Facebook & TikTok Downloader", 
+        # Title
+        title_label = ttk.Label(self.main_frame, text="Video & Audio Downloader", 
                                font=("Arial", 16, "bold"))
-        title_label.grid(row=0, column=0, columnspan=3, pady=(0, 10))
-        
-        # Cảnh báo pháp lý
-        warning_label = ttk.Label(main_frame, 
-                                 text="⚠️ Chỉ tải nội dung công khai và có quyền sử dụng", 
-                                 font=("Arial", 9), foreground="red")
-        warning_label.grid(row=0, column=0, columnspan=3, pady=(0, 20))
+        title_label.pack(pady=(0, 20))
         
         # URL input
-        ttk.Label(main_frame, text="URL Video:").grid(row=1, column=0, sticky=tk.W, pady=5)
-        url_entry = ttk.Entry(main_frame, textvariable=self.url_var, width=50)
-        url_entry.grid(row=1, column=1, columnspan=2, sticky=(tk.W, tk.E), pady=5, padx=(5, 0))
+        url_frame = ttk.Frame(self.main_frame)
+        url_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(url_frame, text="URL Video:").pack(side=tk.LEFT)
+        url_entry = ttk.Entry(url_frame, textvariable=self.url_var, width=50)
+        url_entry.pack(side=tk.LEFT, padx=(10, 0), fill=tk.X, expand=True)
         
         # Format selection
-        ttk.Label(main_frame, text="Chất lượng:").grid(row=2, column=0, sticky=tk.W, pady=5)
-        format_combo = ttk.Combobox(main_frame, textvariable=self.format_var, 
-                                   values=["best", "worst", "bestvideo+bestaudio", "bestaudio"])
-        format_combo.grid(row=2, column=1, sticky=(tk.W, tk.E), pady=5, padx=(5, 0))
+        format_frame = ttk.Frame(self.main_frame)
+        format_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(format_frame, text="Chất lượng:").pack(side=tk.LEFT)
+        format_combo = ttk.Combobox(format_frame, textvariable=self.format_var, 
+                                   values=["best", "worst", "bestvideo+bestaudio", "bestaudio", 
+                                          "best[ext=mp4]", "best[height<=720]"])
+        format_combo.pack(side=tk.LEFT, padx=(10, 0))
         
         # Audio only checkbox
-        audio_check = ttk.Checkbutton(main_frame, text="Chỉ tải audio", 
+        audio_check = ttk.Checkbutton(format_frame, text="Chỉ tải audio", 
                                      variable=self.audio_only)
-        audio_check.grid(row=2, column=2, sticky=tk.W, pady=5, padx=(10, 0))
+        audio_check.pack(side=tk.RIGHT)
         
         # Download path
-        ttk.Label(main_frame, text="Thư mục lưu:").grid(row=3, column=0, sticky=tk.W, pady=5)
-        path_entry = ttk.Entry(main_frame, textvariable=self.download_path, width=40)
-        path_entry.grid(row=3, column=1, sticky=(tk.W, tk.E), pady=5, padx=(5, 0))
+        path_frame = ttk.Frame(self.main_frame)
+        path_frame.pack(fill=tk.X, pady=5)
         
-        browse_btn = ttk.Button(main_frame, text="Chọn thư mục", command=self.browse_folder)
-        browse_btn.grid(row=3, column=2, pady=5, padx=(5, 0))
+        ttk.Label(path_frame, text="Thư mục lưu:").pack(side=tk.LEFT)
+        path_entry = ttk.Entry(path_frame, textvariable=self.download_path, width=40)
+        path_entry.pack(side=tk.LEFT, padx=(10, 0), fill=tk.X, expand=True)
+        
+        browse_btn = ttk.Button(path_frame, text="Chọn thư mục", command=self.browse_folder)
+        browse_btn.pack(side=tk.RIGHT, padx=(10, 0))
         
         # Buttons
-        button_frame = ttk.Frame(main_frame)
-        button_frame.grid(row=4, column=0, columnspan=3, pady=20)
+        button_frame = ttk.Frame(self.main_frame)
+        button_frame.pack(fill=tk.X, pady=20)
         
         download_btn = ttk.Button(button_frame, text="Tải xuống", 
                                  command=self.start_download, style="Accent.TButton")
@@ -87,28 +82,23 @@ class VideoDownloader:
         clear_btn.pack(side=tk.LEFT)
         
         # Progress bar
-        self.progress = ttk.Progressbar(main_frame, mode='indeterminate')
-        self.progress.grid(row=5, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=10)
+        self.progress = ttk.Progressbar(self.main_frame, mode='indeterminate')
+        self.progress.pack(fill=tk.X, pady=10)
         
         # Status label
-        self.status_label = ttk.Label(main_frame, text="Sẵn sàng tải xuống")
-        self.status_label.grid(row=6, column=0, columnspan=3, pady=5)
+        self.status_label = ttk.Label(self.main_frame, text="Sẵn sàng tải xuống")
+        self.status_label.pack(pady=5)
         
         # Log text area
-        log_frame = ttk.LabelFrame(main_frame, text="Nhật ký", padding="5")
-        log_frame.grid(row=7, column=0, columnspan=3, sticky=(tk.W, tk.E, tk.N, tk.S), pady=10)
-        log_frame.columnconfigure(0, weight=1)
-        log_frame.rowconfigure(0, weight=1)
+        log_frame = ttk.LabelFrame(self.main_frame, text="Nhật ký", padding="5")
+        log_frame.pack(fill=tk.BOTH, expand=True, pady=10)
         
         self.log_text = tk.Text(log_frame, height=8, width=70)
         scrollbar = ttk.Scrollbar(log_frame, orient="vertical", command=self.log_text.yview)
         self.log_text.configure(yscrollcommand=scrollbar.set)
         
-        self.log_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-        scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
-        
-        # Cấu hình grid weights
-        main_frame.rowconfigure(7, weight=1)
+        self.log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
     def browse_folder(self):
         """Chọn thư mục lưu file"""
@@ -126,14 +116,23 @@ class VideoDownloader:
         """Thêm thông báo vào log"""
         self.log_text.insert(tk.END, f"{message}\n")
         self.log_text.see(tk.END)
-        self.root.update_idletasks()
+        self.main_frame.update_idletasks()
     
     def validate_url(self, url):
         """Kiểm tra URL hợp lệ"""
-        facebook_pattern = r'(?:https?://)?(?:www\.)?(?:facebook\.com|fb\.com|m\.facebook\.com)'
-        tiktok_pattern = r'(?:https?://)?(?:www\.)?(?:tiktok\.com|vm\.tiktok\.com|vt\.tiktok\.com)'
+        # Hỗ trợ nhiều nền tảng
+        supported_patterns = [
+            r'(?:https?://)?(?:www\.)?(?:facebook\.com|fb\.com|m\.facebook\.com)',
+            r'(?:https?://)?(?:www\.)?(?:tiktok\.com|vm\.tiktok\.com|vt\.tiktok\.com)',
+            r'(?:https?://)?(?:www\.)?(?:youtube\.com|youtu\.be)',
+            r'(?:https?://)?(?:www\.)?(?:instagram\.com)',
+            r'(?:https?://)?(?:www\.)?(?:twitter\.com|x\.com)',
+            r'(?:https?://)?(?:www\.)?(?:vimeo\.com)',
+            r'(?:https?://)?(?:www\.)?(?:dailymotion\.com)',
+            r'(?:https?://)?(?:www\.)?(?:twitch\.tv)'
+        ]
         
-        return bool(re.search(facebook_pattern, url) or re.search(tiktok_pattern, url))
+        return any(re.search(pattern, url) for pattern in supported_patterns)
     
     def check_video_availability(self, url):
         """Kiểm tra khả năng tải video"""
@@ -173,6 +172,20 @@ class VideoDownloader:
             'outtmpl': os.path.join(self.download_path.get(), '%(title)s.%(ext)s'),
             'format': format_selector,
             'noplaylist': True,
+            # Cấu hình cho TikTok
+            'extractor_args': {
+                'tiktok': {
+                    'webpage_url_basename': 'video',
+                    'api_hostname': 'api.tiktokv.com',
+                }
+            },
+            # Thêm user agent để tránh bị chặn
+            'http_headers': {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            },
+            # Thử các format khác nhau nếu format yêu cầu không có
+            'format_sort': ['res', 'ext:mp4:m4a'],
+            'format_sort_force': True,
         }
         
         if self.audio_only.get():
@@ -204,7 +217,7 @@ class VideoDownloader:
             return
         
         if not self.validate_url(url):
-            messagebox.showerror("Lỗi", "URL không hợp lệ! Chỉ hỗ trợ Facebook và TikTok.")
+            messagebox.showerror("Lỗi", "URL không hợp lệ! Hỗ trợ: Facebook, TikTok, YouTube, Instagram, Twitter, Vimeo, Dailymotion, Twitch.")
             return
         
         try:
@@ -222,9 +235,23 @@ class VideoDownloader:
             ydl_opts = self.get_ydl_opts()
             ydl_opts['progress_hooks'] = [self.progress_hook]
             
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                # Tải xuống
-                ydl.download([url])
+            # Thử tải với format linh hoạt hơn cho TikTok
+            if 'tiktok.com' in url.lower():
+                self.log_message("🔄 Đang tải video TikTok...")
+                # Thử format khác nhau cho TikTok
+                for format_try in [self.format_var.get(), "best", "worst", "best[ext=mp4]"]:
+                    try:
+                        ydl_opts['format'] = format_try
+                        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                            ydl.download([url])
+                        break
+                    except Exception as format_error:
+                        self.log_message(f"⚠️ Thử format {format_try} thất bại: {str(format_error)}")
+                        if format_try == "best[ext=mp4]":  # Lần thử cuối
+                            raise format_error
+            else:
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([url])
                 
             self.log_message("✅ Tải xuống hoàn thành!")
             self.status_label.config(text="Tải xuống hoàn thành!")
@@ -241,6 +268,9 @@ class VideoDownloader:
             elif 'region' in error_msg or 'geo' in error_msg:
                 self.log_message("❌ Video bị hạn chế theo vùng địa lý")
                 messagebox.showerror("Lỗi", "Video bị hạn chế theo vùng địa lý!\n\n⚠️ Video chỉ dành cho một số quốc gia.\nHãy tìm nội dung không bị hạn chế theo vùng.")
+            elif 'format' in error_msg and 'not available' in error_msg:
+                self.log_message("❌ Format không khả dụng")
+                messagebox.showerror("Lỗi", "Format video không khả dụng!\n\n💡 Thử chọn format khác:\n• best\n• worst\n• best[ext=mp4]")
             else:
                 self.log_message(f"❌ Lỗi: {str(e)}")
                 messagebox.showerror("Lỗi", f"Lỗi: {str(e)}")
@@ -255,19 +285,3 @@ class VideoDownloader:
         thread = threading.Thread(target=self.download_video)
         thread.daemon = True
         thread.start()
-    
-    def run(self):
-        """Chạy ứng dụng"""
-        self.root.mainloop()
-
-def main():
-    """Hàm main"""
-    try:
-        app = VideoDownloader()
-        app.run()
-    except Exception as e:
-        print(f"Lỗi khởi động ứng dụng: {e}")
-        sys.exit(1)
-
-if __name__ == "__main__":
-    main()
