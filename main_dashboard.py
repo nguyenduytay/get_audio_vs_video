@@ -13,6 +13,7 @@ from pathlib import Path
 
 # Import modules
 from modules.video_downloader import VideoDownloaderModule
+from modules.ai_assistant import AIAssistantModule
 
 class MainDashboard:
     def __init__(self):
@@ -64,6 +65,14 @@ class MainDashboard:
             width=20
         )
         self.menu_buttons['video_downloader'].pack(pady=5, fill=tk.X)
+        
+        # AI Assistant
+        self.menu_buttons['ai_assistant'] = ttk.Button(
+            self.sidebar, text="🤖 AI Assistant", 
+            command=lambda: self.switch_module('ai_assistant'),
+            width=20
+        )
+        self.menu_buttons['ai_assistant'].pack(pady=5, fill=tk.X)
         
         # Placeholder for future modules
         self.menu_buttons['image_tools'] = ttk.Button(
@@ -136,6 +145,8 @@ class MainDashboard:
         try:
             # Video Downloader Module
             self.modules['video_downloader'] = VideoDownloaderModule
+            # AI Assistant Module
+            self.modules['ai_assistant'] = AIAssistantModule
             self.status_label.config(text="Modules loaded successfully")
         except Exception as e:
             messagebox.showerror("Lỗi", f"Không thể tải modules: {e}")
@@ -160,6 +171,10 @@ class MainDashboard:
                 if module_name == 'video_downloader':
                     self.current_module = self.modules[module_name](self.main_content)
                     self.status_label.config(text="Video Downloader - Sẵn sàng tải video/audio")
+                    print(f"✅ Module {module_name} loaded successfully")
+                elif module_name == 'ai_assistant':
+                    self.current_module = self.modules[module_name](self.main_content)
+                    self.status_label.config(text="AI Assistant - Sẵn sàng trò chuyện với AI")
                     print(f"✅ Module {module_name} loaded successfully")
                 else:
                     self.show_coming_soon(module_name)
@@ -193,6 +208,7 @@ class MainDashboard:
         
         features = [
             "📥 Video Downloader - Tải video/audio từ nhiều nền tảng",
+            "🤖 AI Assistant - Trò chuyện với Google Gemini AI",
             "🖼️ Image Tools - Công cụ xử lý hình ảnh (sắp ra mắt)",
             "📝 Text Tools - Công cụ xử lý văn bản (sắp ra mắt)",
             "📁 File Tools - Công cụ quản lý file (sắp ra mắt)"
