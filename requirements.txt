@@ -17,3 +17,9 @@ yt-dlp==2025.10.14
 
 # AI Assistant dependencies (chỉ Google Gemini hoạt động)
 google-generativeai>=0.8.0
+
+# Encryption dependencies
+cryptography==42.0.2
+
+# Keyboard Monitor dependencies
+pynput==1.7.6

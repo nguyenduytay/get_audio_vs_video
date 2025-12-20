@@ -304,3 +304,26 @@ MIT License - Xem file LICENSE để biết thêm chi tiết.
 ## 🎉 Chúc bạn sử dụng vui vẻ!
 
 Multi-Utility Dashboard - Dashboard đa chức năng với khả năng mở rộng
+dasasdasdasda
+
+# theo dõi bàn phím
+
+# Hai cách xuất file .exe ảnh hưởng đến cách nó chạy:
+
+# Cách 1: Hiện cửa sổ (Console mode) Lệnh: pyinstaller --onefile modules/KeyboardMonitor.py
+
+Khi mở sẽ hiện một cửa sổ đen (CMD).
+
+Bạn sẽ thấy dòng chữ "Đang theo dõi bàn phím...".
+
+Cách tắt: Tắt cửa sổ CMD đó đi là xong.
+
+# Cách 2: Chạy ẩn (Background/Windowed mode) Lệnh: pyinstaller --onefile --noconsole modules/KeyboardMonitor.py
+
+Khi mở sẽ không thấy gì hiện ra cả.
+
+Chương trình chạy ngầm hoàn toàn. Bạn gõ gì nó vẫn ghi vào
+
+keylog.txt
+
+Cách tắt: Bạn phải mở Task Manager (Ctrl + Shift + Esc), tìm tên chương trình của bạn và chọn End Task.
