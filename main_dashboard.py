@@ -14,6 +14,7 @@ from pathlib import Path
 # Import modules
 from modules.video_downloader import VideoDownloaderModule
 from modules.ai_assistant import AIAssistantModule
+from modules.image_tools import ImageToolsModule
 
 class MainDashboard:
     def __init__(self):
@@ -74,11 +75,11 @@ class MainDashboard:
         )
         self.menu_buttons['ai_assistant'].pack(pady=5, fill=tk.X)
         
-        # Placeholder for future modules
+        # Image Tools
         self.menu_buttons['image_tools'] = ttk.Button(
             self.sidebar, text="🖼️ Image Tools", 
             command=lambda: self.switch_module('image_tools'),
-            width=20, state=tk.DISABLED
+            width=20
         )
         self.menu_buttons['image_tools'].pack(pady=5, fill=tk.X)
         
@@ -147,6 +148,8 @@ class MainDashboard:
             self.modules['video_downloader'] = VideoDownloaderModule
             # AI Assistant Module
             self.modules['ai_assistant'] = AIAssistantModule
+            # Image Tools Module
+            self.modules['image_tools'] = ImageToolsModule
             self.status_label.config(text="Modules loaded successfully")
         except Exception as e:
             messagebox.showerror("Lỗi", f"Không thể tải modules: {e}")
@@ -175,6 +178,10 @@ class MainDashboard:
                 elif module_name == 'ai_assistant':
                     self.current_module = self.modules[module_name](self.main_content)
                     self.status_label.config(text="AI Assistant - Sẵn sàng trò chuyện với AI")
+                    print(f"✅ Module {module_name} loaded successfully")
+                elif module_name == 'image_tools':
+                    self.current_module = self.modules[module_name](self.main_content)
+                    self.status_label.config(text="Image Tools - Chuyển đổi SVG sang PNG")
                     print(f"✅ Module {module_name} loaded successfully")
                 else:
                     self.show_coming_soon(module_name)

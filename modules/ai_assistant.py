@@ -50,6 +50,7 @@ class AIAssistantModule:
         self.model_name = tk.StringVar(value="gemini-2.0-flash-exp")
         
         # AI clients
+        self.client = None
         self.gemini_client = None
         self.openai_client = None
         self.anthropic_client = None
